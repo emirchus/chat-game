@@ -1,0 +1,11 @@
+build/
+dist/
+__pycache__/
+env/
+
+*.spec
+*.pyc
+*.pyo
+*.pyd
+*.pyw
+*.pyz
