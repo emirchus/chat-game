@@ -34,3 +34,4 @@ websockets==14.1
 wsproto==1.2.0
 yarg==0.1.10
 selenium-stealth==1.0.6
+halo==0.0.31

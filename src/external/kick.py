@@ -1,12 +1,11 @@
 from os import system as sys
 from time import sleep as wait
-from concurrent.futures import ThreadPoolExecutor as tpe
-
 
 try:
     from undetected_chromedriver import Chrome, By
     import undetected_chromedriver as uc
     from selenium_stealth import stealth
+    from selenium.common.exceptions import WebDriverException
 except ImportError:
     sys("pip install setuptools")
     sys("pip install selenium==4.10.0")
@@ -15,10 +14,11 @@ except ImportError:
     from undetected_chromedriver import Chrome, By
     import undetected_chromedriver as uc
     from selenium_stealth import stealth
+    from selenium.common.exceptions import WebDriverException
 
-thread = tpe(max_workers=100)
 
-def monitor_chatroom(channel_name, ready_event, message_event, tick, interval=0):
+
+def monitor_chatroom(thread, channel_name, ready_event, message_event, tick, interval=0):
 
     channel = channel_name
     url = "https://www.kick.com/" + channel + "/chatroom"
@@ -30,94 +30,95 @@ def monitor_chatroom(channel_name, ready_event, message_event, tick, interval=0)
 
     options.add_argument("--headless")
 
-    browser = Chrome(use_subprocess=True, options=options)
+    try:
+        with Chrome(use_subprocess=True, options=options) as browser:
+            browser.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
+                "source": """     Object.defineProperty(navigator, 'webdriver', {       get: () => undefined     });     """
+            })
 
-    browser.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
-     "source": """     Object.defineProperty(navigator, 'webdriver', {       get: () => undefined     });     """
-    })
+            stealth(browser,
+                languages=["en-US", "en"],
+                vendor="Google Inc.",
+                platform="Win32",
+                webgl_vendor="Intel Inc.",
+                renderer="Intel Iris OpenGL Engine",
+                fix_hairline=True)
 
-    stealth(browser,
-            languages=["en-US", "en"],
-            vendor="Google Inc.",
-            platform="Win32",
-            webgl_vendor="Intel Inc.",
-            renderer="Intel Iris OpenGL Engine",
-            fix_hairline=True)
+            browser.set_window_size(1, 1, browser.window_handles[0])
 
-    browser.set_window_size(1, 1, browser.window_handles[0])
+            browser.get(url)
 
-    browser.get(url)
+            sys('cls')
 
-    sys('cls')
+            readMessages = []
+            history = []
+            firstRun = True
 
-    readMessages = []
-    history = []
-    firstRun = True
+            wait(2.5)
 
-    wait(2.5)
+            bot_messages = [
+                "Un momento…",
+            ]
 
-    bot_messages = [
-        "Un momento…",
-    ]
+            if any(msg in browser.page_source for msg in bot_messages):
+                print("Esperando a que termine el captcha...")
+            while any(msg in browser.page_source for msg in bot_messages):
+                wait(0.5)
 
-    if any(msg in browser.page_source for msg in bot_messages):
-        print("Esperando a que termine el captcha...")
-    while any(msg in browser.page_source for msg in bot_messages):
-        wait(0.5)
+            sys("cls")
 
-    sys("cls")
+            thread.submit(ready_event, channel, url)
+            while True:
+                wait(interval)
 
-    thread.submit(ready_event, channel, url)
-    while True:
+                page = browser.page_source
 
-        wait(interval)
+                if page.find("Oops, Something went wrong") != -1:
+                    print("El navegador parece haber obtenido un error 404, asegúrate de que hayas ingresado tu nombre de canal en channel.txt correctamente. Es sensible a mayúsculas y minúsculas, asegúrate de ingresar solo el nombre de usuario, no la URL completa del canal.")
 
-        page = browser.page_source
+                messagesFormatted = []
 
-        if page.find("Oops, Something went wrong") != -1:
-            print("El navegador parece haber obtenido un error 404, asegúrate de que hayas ingresado tu nombre de canal en channel.txt correctamente. Es sensible a mayúsculas y minúsculas, asegúrate de ingresar solo el nombre de usuario, no la URL completa del canal.")
+                msgSplit = page.split('data-chat-entry="')
+                del msgSplit[0]
 
-        messagesFormatted = []
+                msgs = []
+                usrs = []
+                usrs_ids = []
+                ids = []
 
-        msgSplit = page.split('data-chat-entry="')
-        del msgSplit[0]
+                for v in msgSplit:
+                    if (v.find("chatroom-history-breaker") != -1):
+                        continue
 
-        msgs = []
-        usrs = []
-        usrs_ids = []
-        ids = []
+                    ids.append(v.split('"')[0])
 
-        for v in msgSplit:
-            if (v.find("chatroom-history-breaker") != -1):
-                continue
+                    currentMsgList = v.split('class="chat-entry-content">')
+                    del currentMsgList[0]
+                    currentMsg = ""
 
-            ids.append(v.split('"')[0])
+                    for i in currentMsgList:
+                        currentMsg += i.split("</span>")[0] + " "
+                    currentMsg = currentMsg[0:len(currentMsg)-1]
+                    msgs.append(currentMsg)
 
-            currentMsgList = v.split('class="chat-entry-content">')
-            del currentMsgList[0]
-            currentMsg = ""
+                    usrs_ids.append(v.split('data-chat-entry-user-id="')[1].split('"')[0])
+                    colorCode = v.split('id="'+usrs_ids[len(usrs_ids)-1]+'" style="')[1].split(');">')[0]
+                    usrs.append(v.split(colorCode + ');">')[1].split("</span>")[0])
 
-            for i in currentMsgList:
-                currentMsg += i.split("</span>")[0] + " "
-            currentMsg = currentMsg[0:len(currentMsg)-1]
-            msgs.append(currentMsg)
+                for i, v in enumerate(msgs):
+                    messagesFormatted.append([usrs[i], msgs[i], ids[i], usrs_ids[i]])
 
-            usrs_ids.append(v.split('data-chat-entry-user-id="')[1].split('"')[0])
-            colorCode = v.split('id="'+usrs_ids[len(usrs_ids)-1]+'" style="')[1].split(');">')[0]
-            usrs.append(v.split(colorCode + ');">')[1].split("</span>")[0])
+                for i, v in enumerate(messagesFormatted):
+                    if v[2] not in readMessages:
+                        newMsg = v
+                        if not firstRun:
+                            thread.submit(message_event, newMsg)
+                        else:
+                            history.append(newMsg)
+                        readMessages.append(v[2])
+                firstRun = False
 
-        for i, v in enumerate(msgs):
-            messagesFormatted.append([usrs[i], msgs[i], ids[i], usrs_ids[i]])
-
-        for i, v in enumerate(messagesFormatted):
-            if v[2] not in readMessages:
-                newMsg = v
-                if not firstRun:
-                    thread.submit(message_event, newMsg)
-                else:
-                    history.append(newMsg)
-                readMessages.append(v[2])
-        firstRun = False
-
-        thread.submit(tick)
+                thread.submit(tick)
+    except WebDriverException as e:
+        print(f"⭕ Error: {e}")
 
