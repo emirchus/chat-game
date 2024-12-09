@@ -1,52 +1,60 @@
+# Comandos que se mantienen presionados
 HOLD_COMMANDS = {
     "!corre": "shift",
     "!apuntar": "right"
 }
 
+# Comandos de movimiento de cámara
 CAMERA_COMMANDS = {
     "!cam_arriba": "mouse_up",
     "!cam_abajo": "mouse_down",
     "!cam_izq": "mouse_left",
     "!cam_der": "mouse_right",
+    "!cam_reset": "numpad5"
 }
 
+# Comandos de mouse
 MOUSE_COMMANDS = {
-    "!cam_arriba": "mouse_up",
-    "!cam_abajo": "mouse_down",
-    "!cam_izq": "mouse_left",
-    "!cam_der": "mouse_right",
     "!dispara": "left",
     "!disparo": "left",
-    "!apuntar": "right",
+    "!apuntar": "right"
 }
 
+# Mapeo completo de comandos a teclas
 KEY_MAP = {
+    # Movimiento básico
     "!adelante": "w",
     "!atras": "s",
     "!izquierda": "a",
     "!derecha": "d",
     "!salta": "space",
-    "!corre": "shift",
     "!agacharse": "ctrl",
+
+    # Acciones
+    "!corre": "shift",
     "!entrar": "f",
     "!interactuar": "e",
+    "!recargar": "r",
+
+    # Vehículos
     "!acelerar": "w",
     "!frenar": "space",
     "!bocina": "h",
-    "!recargar": "r",
+
+    # Armas
     "!arma1": "1",
     "!arma2": "2",
-    "!cam_arriba": "mouse_up",
-    "!cam_abajo": "mouse_down",
-    "!cam_izq": "mouse_left",
-    "!cam_der": "mouse_right",
-    "!cam_reset": "numpad5",
+
+    # Cámara
     "!camara": "v",
     "!cam_arriba": "mouse_up",
     "!cam_abajo": "mouse_down",
     "!cam_izq": "mouse_left",
     "!cam_der": "mouse_right",
+    "!cam_reset": "numpad5",
+
+    # Combate
     "!dispara": "left",
     "!disparo": "left",
-    "!apuntar": "right",
+    "!apuntar": "right"
 }

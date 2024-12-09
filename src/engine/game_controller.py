@@ -1,30 +1,39 @@
+# Importaciones necesarias
 import asyncio
 import keyboard
 import time
-
 import os
-
 from time import sleep as wait
 from pynput.mouse import Button as MouseButton, Controller as MouseController
-
 from engine import commands
 
+# Controlador del mouse
 mouse = MouseController()
 
+# Cola de comandos asíncrona
 command_queue = asyncio.Queue()
 
+# Diccionario para manejar timeouts de usuarios
 users_timeouts = {}
 
 async def add_command(username, raw_command, command):
+    """
+    Añade un comando a la cola si el usuario no está en timeout
+
+    Args:
+        username: Nombre del usuario que envió el comando
+        raw_command: Comando original sin procesar
+        command: Comando procesado a ejecutar
+    """
     print(f"✨ Añadiendo comando a la cola: {command}")
     current_time = time.time()
 
     # Verificar si el usuario tiene un timeout
-    # if username in users_timeouts:
-    #     last_command_time = users_timeouts[username]
-    #     if current_time - last_command_time < 600:  # 600 segundos = 10 minutos
-    #         print(f"⏳ {username} debe esperar antes de enviar otro comando")
-    #       w  return
+    if username in users_timeouts:
+        last_command_time = users_timeouts[username]
+        if current_time - last_command_time < 600:  # 600 segundos = 10 minutos
+            print(f"⏳ {username} debe esperar antes de enviar otro comando")
+            return
 
     # Actualizar el tiempo del último comando del usuario
     users_timeouts[username] = current_time
@@ -34,6 +43,12 @@ async def add_command(username, raw_command, command):
     save_command_history(raw_command)
 
 def save_command_history(command):
+    """
+    Guarda el historial de comandos en un archivo
+
+    Args:
+        command: Comando a guardar en el historial
+    """
     # Obtener ruta de AppData
     appdata = os.getenv('APPDATA')
     game_dir = os.path.join(appdata, 'chat-game')
@@ -64,10 +79,16 @@ def save_command_history(command):
         f.writelines(history)
 
 def execute_command():
+    """
+    Ejecuta el siguiente comando en la cola
+    Maneja comandos de mouse, teclas mantenidas y teclas normales
+    """
     if not command_queue.empty():
         print("🕛 Esperando comando en la cola...")
         command = command_queue.get_nowait()  # Espera el siguiente comando
         print(f"🕛 Procesando comando: {command}")
+
+        # Procesar comandos de mouse
         if command in commands.MOUSE_COMMANDS.values():
             if command in commands.CAMERA_COMMANDS.values():
                 # Mapeo de comandos a coordenadas de movimiento
@@ -89,6 +110,8 @@ def execute_command():
                 mouse.click(button=MouseButton.left, count=1)
             elif command == "right":
                 mouse.press(MouseButton.right)
+
+        # Procesar teclas que se mantienen presionadas
         elif command in commands.HOLD_COMMANDS.values():
             if keyboard.is_pressed(command):
                 keyboard.release(command)
@@ -96,6 +119,8 @@ def execute_command():
             else:
                 keyboard.send(command, do_press=True, do_release=False)
                 print(f"⌨️ Tecla {command} presionada.")
+
+        # Procesar teclas normales
         else:
             keyboard.send(command, do_press=True, do_release=False)
             wait(1)
@@ -114,6 +139,12 @@ def execute_command():
 
 
 def save_last_executed_command(command):
+    """
+    Guarda el último comando ejecutado en un archivo
+
+    Args:
+        command: Comando a guardar como último ejecutado
+    """
     # Obtener ruta de AppData
     appdata = os.getenv('APPDATA')
     game_dir = os.path.join(appdata, 'chat-game')
