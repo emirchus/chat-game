@@ -30,7 +30,7 @@ def monitor_chatroom(
     ):
     """
     Monitorea el chat de un canal de Kick.com
-    SRC Original: https://github.com/Scorpy-37/Kick.com-python-based-chat-reader
+    Créditos para Scorpy-37: https://github.com/Scorpy-37/Kick.com-python-based-chat-reader
 
     Args:
         thread: Hilo de ejecución

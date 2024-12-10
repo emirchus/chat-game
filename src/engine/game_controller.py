@@ -31,7 +31,7 @@ async def add_command(username: str, raw_command: str, command: str):
     # Verificar si el usuario tiene un timeout
     if username in users_timeouts:
         last_command_time = users_timeouts[username]
-        if current_time - last_command_time < 600:  # 600 segundos = 10 minutos
+        if current_time - last_command_time < 200:  # 600 segundos = 10 minutos
             print(f"⏳ {username} debe esperar antes de enviar otro comando")
             return
 
@@ -78,14 +78,14 @@ def save_command_history(command: str):
     with open(history_file, 'w') as f:
         f.writelines(history)
 
-def execute_command():
+async def execute_command():
     """
     Ejecuta el siguiente comando en la cola
     Maneja comandos de mouse, teclas mantenidas y teclas normales
     """
     if not command_queue.empty():
         print("🕛 Esperando comando en la cola...")
-        command = command_queue.get_nowait()  # Espera el siguiente comando
+        command = await command_queue.get()  # Espera el siguiente comando
         print(f"🕛 Procesando comando: {command}")
 
         # Procesar comandos de mouse
@@ -170,3 +170,18 @@ def save_last_executed_command(command: str):
     # Guardar historial actualizado
     with open(history_file, 'w') as f:
         f.writelines(history)
+
+def clear_histories():
+    """
+    Limpia los archivos de historial
+    """
+    os.remove(os.path.join(os.getenv('APPDATA'), 'chat-game', 'command_history.txt'))
+    os.remove(os.path.join(os.getenv('APPDATA'), 'chat-game', 'last_executed_command.txt'))
+
+def clear_commands():
+    """
+    Limpia la cola de comandos
+    """
+    while not command_queue.empty():
+        command_queue.get_nowait()
+        command_queue.task_done()

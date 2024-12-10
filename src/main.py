@@ -2,7 +2,7 @@
 import asyncio
 from external.kick import monitor_chatroom
 import engine.commands as commands
-from engine.game_controller import add_command, execute_command
+from engine.game_controller import add_command, execute_command, clear_histories, clear_commands
 from prompt_toolkit import prompt
 from halo import Halo  # Para mostrar spinner de carga
 from keyboard import is_pressed
@@ -43,6 +43,11 @@ def ready_event(channel: str, link: str):
             print("Presiona 'q' para cerrar el programa.")
             print("Presiona 'r' para resetear los comandos.")
             print("Presiona 'c' para limpiar la pantalla.")
+            break;
+        if is_pressed('r'):
+            clear_commands()
+            clear_histories()
+            break;
 
 
 def message_event(msg: list[str]):
@@ -77,6 +82,7 @@ def run_command_game():
     """
     asyncio.run(execute_command())
 
+
 def main():
     """
     Función principal del programa
@@ -86,8 +92,9 @@ def main():
         # Solicita el nombre del canal al usuario
         canal = prompt("🟩 Ingresá el nombre del canal de Kick: ")
         spinner.start()
+        clear_histories()
         # Inicia el monitor de chat con un intervalo de 0.5 segundos
-        monitor_chatroom(thread, canal, ready_event, message_event, .5)
+        monitor_chatroom(thread, canal, ready_event, message_event, tick, .5)
     except KeyboardInterrupt:
         print("\n⭕Programa interrumpido por el usuario")
     except Exception as e:

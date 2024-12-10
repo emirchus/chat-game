@@ -30,12 +30,14 @@ Este proyecto permite controlar juegos a través de comandos de chat en Kick.com
 ## 📦 Instalación
 
 1. Clona el repositorio:
+
 ```bash
 git clone https://github.com/tu-usuario/chat-game-controller.git
 cd chat-game-controller
 ```
 
 2. Instala las dependencias:
+
 ```bash
 pip install -r requirements.txt
 ```
@@ -43,6 +45,7 @@ pip install -r requirements.txt
 ## 🚀 Uso
 
 1. Ejecuta el programa:
+
 ```bash
 python src/main.py
 ```
@@ -51,13 +54,31 @@ python src/main.py
 3. El programa comenzará a escuchar los comandos del chat
 
 ### Controles del programa:
+
 - `q`: Cerrar el programa
 - `r`: Resetear comandos
 - `c`: Limpiar pantalla
 
+## 🕛 Build
+
+Hacer build del proyecto
+
+### Unix
+
+```bash
+scripts/build.sh
+```
+
+### Windows
+
+```bash
+scripts/build.bat
+```
+
 ## 🎮 Comandos disponibles
 
 ### Movimiento básico
+
 - `!adelante`: W
 - `!atras`: S
 - `!izquierda`: A
@@ -66,12 +87,14 @@ python src/main.py
 - `!agacharse`: Ctrl
 
 ### Acciones
+
 - `!corre`: Shift
 - `!entrar`: F
 - `!interactuar`: E
 - `!recargar`: R
 
 ### Cámara
+
 - `!cam_arriba`: Mover cámara arriba
 - `!cam_abajo`: Mover cámara abajo
 - `!cam_izq`: Mover cámara izquierda
@@ -137,10 +160,9 @@ KEY_MAP = {
 
 ```
 
-
 ## 📝 Notas
 
-- Los usuarios tienen un timeout de 10 minutos entre comandos para evitar spam
+- Los usuarios tienen un timeout de 200 segundos entre comandos para evitar spam
 - El historial guarda los últimos 10 comandos ejecutados
 - El programa utiliza técnicas anti-detección para funcionar con Kick.com
 
