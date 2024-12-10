@@ -16,7 +16,7 @@ command_queue = asyncio.Queue()
 # Diccionario para manejar timeouts de usuarios
 users_timeouts = {}
 
-async def add_command(username, raw_command, command):
+async def add_command(username: str, raw_command: str, command: str):
     """
     Añade un comando a la cola si el usuario no está en timeout
 
@@ -42,7 +42,7 @@ async def add_command(username, raw_command, command):
     await command_queue.put(command)
     save_command_history(raw_command)
 
-def save_command_history(command):
+def save_command_history(command: str):
     """
     Guarda el historial de comandos en un archivo
 
@@ -138,12 +138,12 @@ def execute_command():
         wait(1)
 
 
-def save_last_executed_command(command):
+def save_last_executed_command(command: str):
     """
     Guarda el último comando ejecutado en un archivo
 
     Args:
-        command: Comando a guardar como último ejecutado
+        `command`: Comando a guardar como último ejecutado
     """
     # Obtener ruta de AppData
     appdata = os.getenv('APPDATA')

@@ -18,7 +18,7 @@ spinner = Halo(text='Cargando navegador...', spinner='dots')
 # Creación del pool de hilos para manejar operaciones asíncronas
 thread = tpe(max_workers=100)
 
-def ready_event(channel, link):
+def ready_event(channel: str, link: str):
     """
     Evento que se dispara cuando el monitor de chat está listo
     Maneja los controles del programa y muestra información al usuario
@@ -45,7 +45,7 @@ def ready_event(channel, link):
             print("Presiona 'c' para limpiar la pantalla.")
 
 
-def message_event(msg):
+def message_event(msg: list[str]):
     """
     Procesa los mensajes nuevos del chat
 
@@ -87,7 +87,7 @@ def main():
         canal = prompt("🟩 Ingresá el nombre del canal de Kick: ")
         spinner.start()
         # Inicia el monitor de chat con un intervalo de 0.5 segundos
-        monitor_chatroom(thread, canal, ready_event, message_event, tick, .5)
+        monitor_chatroom(thread, canal, ready_event, message_event, .5)
     except KeyboardInterrupt:
         print("\n⭕Programa interrumpido por el usuario")
     except Exception as e:

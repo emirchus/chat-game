@@ -1,6 +1,9 @@
 from os import system as sys
 from time import sleep as wait
 
+from concurrent.futures import ThreadPoolExecutor as tpe
+from typing import Callable
+
 try:
     from undetected_chromedriver import Chrome, By
     import undetected_chromedriver as uc
@@ -17,7 +20,14 @@ except ImportError:
     from selenium.common.exceptions import WebDriverException
 
 
-def monitor_chatroom(thread, channel_name, ready_event, message_event, tick, interval=0):
+def monitor_chatroom(
+        thread: tpe,
+        channel_name: str,
+        ready_event: Callable[[str, str], None],
+        message_event: Callable[[list[str]], None],
+        tick: Callable[[], None],
+        interval: int = 0
+    ):
     """
     Monitorea el chat de un canal de Kick.com
     SRC Original: https://github.com/Scorpy-37/Kick.com-python-based-chat-reader
