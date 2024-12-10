@@ -1,116 +1,152 @@
-# Importaciones necesarias
 import asyncio
 from external.kick import monitor_chatroom
 import engine.commands as commands
 from engine.game_controller import add_command, execute_command, clear_histories, clear_commands
 from prompt_toolkit import prompt
-from halo import Halo  # Para mostrar spinner de carga
+from halo import Halo
 from keyboard import is_pressed
 from time import sleep as wait
 import sys
 from os import system as bash
-from concurrent.futures import ThreadPoolExecutor as tpe
+from concurrent.futures import ThreadPoolExecutor as tpe 
+import signal
 
 # Variables globales
 canal = ""
 spinner = Halo(text='Cargando navegador...', spinner='dots')
+loop = asyncio.new_event_loop()
+thread_pool = tpe(max_workers=100)
+should_exit = False
 
-# Creación del pool de hilos para manejar operaciones asíncronas
-thread = tpe(max_workers=100)
+async def handle_control_keys(channel: str, link: str):
+    """
+    Maneja las teclas de control de manera asíncrona
+    """
+    global should_exit
+    while not should_exit:
+        await asyncio.sleep(0.1)
+        if is_pressed('q'):
+            print("⭕ Tecla 'q' presionada. Cerrando el programa...")
+            should_exit = True
+            break
+        elif is_pressed('c'):
+            bash("cls")
+            print("🚀 Escuchando a " + channel + " en " + link)
+            print("Presiona 'q' para cerrar el programa.")
+            print("Presiona 'r' para resetear los comandos.")
+            print("Presiona 'c' para limpiar la pantalla.")
+        elif is_pressed('r'):
+            await clear_commands()
+            await clear_histories()
 
 def ready_event(channel: str, link: str):
     """
     Evento que se dispara cuando el monitor de chat está listo
-    Maneja los controles del programa y muestra información al usuario
     """
     spinner.stop()
     print("🚀 Escuchando a " + channel + " en " + link)
     print("Presiona 'q' para cerrar el programa.")
     print("Presiona 'r' para resetear los comandos.")
     print("Presiona 'c' para limpiar la pantalla.")
+    
+    # Iniciar el manejador de teclas de control en el loop de eventos
+    asyncio.run_coroutine_threadsafe(handle_control_keys(channel, link), loop)
 
-    # Loop principal para detectar teclas de control
-    while True:
-        wait(0.1)
-        if is_pressed('q'):
-            print("⭕ Tecla 'q' presionada. Cerrando el programa...")
-            thread.shutdown()
-            sys.exit()
-            break;
-        if is_pressed('c'):
-            bash("cls")
-            print("🚀 Escuchando a " + channel + " en " + link)
-            print("Presiona 'q' para cerrar el programa.")
-            print("Presiona 'r' para resetear los comandos.")
-            print("Presiona 'c' para limpiar la pantalla.")
-            break;
-        if is_pressed('r'):
-            clear_commands()
-            clear_histories()
-            break;
-
+async def process_message(author: str, command: str):
+    """
+    Procesa los mensajes de manera asíncrona
+    """
+    if command in commands.KEY_MAP:
+        await add_command(author, command, commands.KEY_MAP[command])
 
 def message_event(msg: list[str]):
     """
     Procesa los mensajes nuevos del chat
-
-    Args:
-        msg: Lista que contiene [autor, contenido, id, user_id]
     """
     author = msg[0]
-    content = msg[1]
+    content = msg[1].lower().strip()
+    print(f"{author} executed: {content}")
 
-    command = content.lower().strip()
-    print(f"{author} executed: {command}")
+    # Ejecutar el procesamiento de mensaje en el loop de eventos
+    asyncio.run_coroutine_threadsafe(process_message(author, content), loop)
 
-    # Si el mensaje es un comando válido, lo añade a la cola de ejecución
-    if command in commands.KEY_MAP:
-        asyncio.run(add_command(author, command, commands.KEY_MAP[command]))
+async def tick_async():
+    """
+    Versión asíncrona del tick
+    """
+    await execute_command()
 
 def tick():
     """
     Se ejecuta en cada ciclo del monitor
-    Procesa los comandos pendientes
     """
-    run_command_game()
-    pass
+    asyncio.run_coroutine_threadsafe(tick_async(), loop)
 
-
-def run_command_game():
+def signal_handler(signum, frame):
     """
-    Ejecuta los comandos pendientes en la cola
+    Manejador de señales para cierre graceful
     """
-    asyncio.run(execute_command())
+    global should_exit
+    should_exit = True
+    print("\n⭕ Programa interrumpido")
+    sys.exit(0)
 
-
-def main():
+async def async_main():
     """
-    Función principal del programa
-    Inicia el monitor de chat y maneja excepciones
+    Función principal asíncrona
     """
     try:
-        # Solicita el nombre del canal al usuario
         canal = prompt("🟩 Ingresá el nombre del canal de Kick: ")
         spinner.start()
-        clear_histories()
-        # Inicia el monitor de chat con un intervalo de 0.5 segundos
-        monitor_chatroom(thread, canal, ready_event, message_event, tick, .5)
-    except KeyboardInterrupt:
-        print("\n⭕Programa interrumpido por el usuario")
+        await clear_histories()
+        
+        # Configurar el manejador de señales
+        signal.signal(signal.SIGINT, signal_handler)
+        
+        # Iniciar el monitor en un thread separado
+        await loop.run_in_executor(
+            thread_pool,
+            monitor_chatroom,
+            thread_pool,
+            canal,
+            ready_event,
+            message_event,
+            tick,
+            0.5
+        )
     except Exception as e:
         print(f"⭕ Error: {e}")
     finally:
-        on_exit()
+        await on_exit()
 
-
-def on_exit():
+async def on_exit():
     """
-    Función que se ejecuta al cerrar el programa
-    Muestra mensajes de despedida
+    Limpieza asíncrona al salir
     """
     print("\nCerrando el programa...")
     print("La despedida del papu :v")
+    
+    # Limpieza de recursos
+    thread_pool.shutdown(wait=True)
+    tasks = [t for t in asyncio.all_tasks(loop) if t is not asyncio.current_task()]
+    for task in tasks:
+        task.cancel()
+    await asyncio.gather(*tasks, return_exceptions=True)
+    loop.stop()
+    loop.close()
 
-# Punto de entrada del programa
+def main():
+    """
+    Punto de entrada principal
+    """
+    try:
+        asyncio.set_event_loop(loop)
+        loop.run_until_complete(async_main())
+    except KeyboardInterrupt:
+        pass
+    finally:
+        if not loop.is_closed():
+            loop.close()
+
 if __name__ == "__main__":
     main()
