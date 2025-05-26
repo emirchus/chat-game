@@ -28,6 +28,7 @@ def get_key_nonblocking():
         return msvcrt.getch().decode('utf-8', errors='ignore')
     return None
 
+
 async def handle_control_keys(channel: str, link: str, control_key: str):
     """
     Maneja las teclas de control de manera asíncrona
@@ -86,9 +87,13 @@ def message_event(msg: list[str]):
     """
     Procesa los mensajes nuevos del chat
     """
+    global should_exit
     author = msg[0]
     content = msg[1].lower().strip()
     print(f"{author} executed: {content}")
+
+    if(author == canal and content == "!stop"):
+        should_exit = True
 
     # Ejecutar el procesamiento de mensaje en el loop de eventos
     asyncio.run_coroutine_threadsafe(process_message(author, content), loop)
@@ -98,7 +103,9 @@ async def tick_async():
     Versión asíncrona del tick
     """
     if(should_exit):
-        await on_exit();
+        await on_exit()
+        sys.exit(0)
+        return
     await execute_command()
 
 def tick():
