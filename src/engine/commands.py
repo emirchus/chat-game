@@ -17,7 +17,12 @@ CAMERA_COMMANDS = {
 MOUSE_COMMANDS = {
     "!dispara": "left",
     "!disparo": "left",
-    "!apuntar": "right"
+    "!apuntar": "right",
+    "!cam_arriba": "mouse_up",
+    "!cam_abajo": "mouse_down",
+    "!cam_izq": "mouse_left",
+    "!cam_der": "mouse_right",
+    "!cam_reset": "numpad5"
 }
 
 # Mapeo completo de comandos a teclas
