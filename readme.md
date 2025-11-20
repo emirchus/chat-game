@@ -103,6 +103,23 @@ scripts/build.bat
 
 ## 🔧 Configuración
 
+### Configuración del Cooldown y Sistema
+
+Ahora puedes configurar fácilmente el tiempo de cooldown entre comandos y otros parámetros editando el archivo `config.json` en la raíz del proyecto:
+
+```json
+{
+  "command_cooldown_seconds": 200,
+  "command_history_limit": 10
+}
+```
+
+**Parámetros disponibles:**
+- `command_cooldown_seconds`: Tiempo en segundos que debe esperar un usuario entre comandos (por defecto: 200 segundos)
+- `command_history_limit`: Número máximo de comandos a guardar en el historial (por defecto: 10)
+
+### Personalización de Comandos
+
 Los comandos se pueden personalizar modificando el archivo:
 
 ```1:52:src/engine/commands.py
@@ -162,9 +179,10 @@ KEY_MAP = {
 
 ## 📝 Notas
 
-- Los usuarios tienen un timeout de 200 segundos entre comandos para evitar spam
-- El historial guarda los últimos 10 comandos ejecutados
+- Los usuarios tienen un timeout configurable entre comandos para evitar spam (por defecto: 200 segundos)
+- El historial guarda los últimos comandos ejecutados (configurable en `config.json`)
 - El programa utiliza técnicas anti-detección para funcionar con Kick.com
+- Puedes modificar el archivo `config.json` en cualquier momento para ajustar los parámetros del sistema
 
 ## 🤝 Contribuciones
 

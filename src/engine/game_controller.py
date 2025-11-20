@@ -7,6 +7,7 @@ from time import sleep as wait
 from pynput.mouse import Button as MouseButton, Controller as MouseController
 from engine import commands
 import threading
+from config import get_command_cooldown, get_command_history_limit
 
 # Controlador del mouse
 mouse = MouseController()
@@ -34,11 +35,12 @@ async def add_command(username: str, raw_command: str, command: str):
     current_time = time.time()
 
     # Verificar si el usuario tiene un timeout
+    cooldown_seconds = get_command_cooldown()
     with users_timeout_lock:
         if username in users_timeouts:
             last_command_time = users_timeouts[username]
-            if current_time - last_command_time < 200:  # 200 segundos = 3 minutos
-                print(f"⏳ {username} debe esperar antes de enviar otro comando {round(current_time - last_command_time)}s")
+            if current_time - last_command_time < cooldown_seconds:
+                print(f"⏳ {username} debe esperar antes de enviar otro comando {round(current_time - last_command_time)}s (cooldown: {cooldown_seconds}s)")
                 return
 
         # Actualizar el tiempo del último comando del usuario
@@ -75,9 +77,10 @@ async def save_command_history(command: str):
         # Añadir nuevo comando
         history.append(f"{command}\n")
 
-        # Mantener solo los últimos 10 comandos
-        if len(history) > 10:
-            history = history[-10:]
+        # Mantener solo los últimos N comandos (configurable)
+        history_limit = get_command_history_limit()
+        if len(history) > history_limit:
+            history = history[-history_limit:]
 
         # Guardar historial actualizado
         with open(history_file, 'w') as f:
