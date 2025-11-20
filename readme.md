@@ -50,8 +50,10 @@ pip install -r requirements.txt
 python src/main.py
 ```
 
-2. Ingresa el nombre del canal de Kick.com que deseas monitorear
-3. El programa comenzará a escuchar los comandos del chat
+2. El programa te mostrará la configuración actual y te preguntará si deseas modificar el cooldown
+3. Si deseas cambiarlo, ingresa el nuevo valor en segundos (de lo contrario, presiona Enter)
+4. Ingresa el nombre del canal de Kick.com que deseas monitorear
+5. El programa comenzará a escuchar los comandos del chat
 
 ### Controles del programa:
 
@@ -102,6 +104,59 @@ scripts/build.bat
 - `!cam_reset`: Resetear cámara
 
 ## 🔧 Configuración
+
+### Configuración del Cooldown y Sistema
+
+Tienes **dos formas** de configurar el cooldown entre comandos:
+
+#### 🎯 Opción 1: Configuración Interactiva (Recomendada)
+
+Al iniciar el programa, se te preguntará si deseas modificar el cooldown:
+```
+⚙️  Cooldown configurado: 200s (por defecto: 200s)
+📋 Archivo de configuración: C:\Users\...\AppData\Roaming\chat-game\config.json
+
+¿Desea modificar el cooldown? (s/N):
+```
+
+- Escribe `s` o `si` para modificar el valor
+- Ingresa el nuevo valor en segundos
+- El cambio se guardará automáticamente
+
+#### 📝 Opción 2: Editar el archivo de configuración manualmente
+
+También puedes editar el archivo `config.json` directamente.
+
+##### 📍 ¿Dónde encuentro el archivo de configuración?
+
+**Para usuarios finales (.exe):**
+El archivo se encuentra en: `%APPDATA%\chat-game\config.json`
+
+Para acceder rápidamente:
+1. Presiona `Win + R`
+2. Escribe `%APPDATA%\chat-game`
+3. Presiona Enter
+4. Edita el archivo `config.json` con un editor de texto
+
+**Para desarrolladores:**
+El programa muestra la ubicación del archivo al iniciar. También puedes encontrarlo en la raíz del proyecto o en AppData.
+
+#### ⚙️ Parámetros configurables:
+
+```json
+{
+  "command_cooldown_seconds": 200,
+  "command_history_limit": 10
+}
+```
+
+**Parámetros disponibles:**
+- `command_cooldown_seconds`: Tiempo en segundos que debe esperar un usuario entre comandos (por defecto: 200 segundos)
+- `command_history_limit`: Número máximo de comandos a guardar en el historial (por defecto: 10)
+
+> 💡 **Tip:** El programa muestra la ubicación exacta del archivo y el cooldown actual cada vez que se inicia.
+
+### Personalización de Comandos
 
 Los comandos se pueden personalizar modificando el archivo:
 
@@ -162,9 +217,10 @@ KEY_MAP = {
 
 ## 📝 Notas
 
-- Los usuarios tienen un timeout de 200 segundos entre comandos para evitar spam
-- El historial guarda los últimos 10 comandos ejecutados
+- Los usuarios tienen un timeout configurable entre comandos para evitar spam (por defecto: 200 segundos)
+- El historial guarda los últimos comandos ejecutados (configurable en `config.json`)
 - El programa utiliza técnicas anti-detección para funcionar con Kick.com
+- Puedes modificar el archivo `config.json` en cualquier momento para ajustar los parámetros del sistema
 
 ## 🤝 Contribuciones
 

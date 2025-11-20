@@ -1,0 +1,4 @@
+{
+  "command_cooldown_seconds": 200,
+  "command_history_limit": 10
+}
