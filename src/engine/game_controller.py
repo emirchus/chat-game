@@ -37,7 +37,7 @@ async def add_command(username: str, raw_command: str, command: str):
     with users_timeout_lock:
         if username in users_timeouts:
             last_command_time = users_timeouts[username]
-            if current_time - last_command_time < 200:  # 200 segundos = 3 minutos
+            if current_time - last_command_time < 10:  # 200 segundos = 3 minutos
                 print(f"⏳ {username} debe esperar antes de enviar otro comando {round(current_time - last_command_time)}s")
                 return
 

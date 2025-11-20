@@ -10,6 +10,10 @@ from os import system as bash
 from concurrent.futures import ThreadPoolExecutor as tpe
 import signal
 import time
+import psutil
+import win32gui
+import win32process
+
 # Variables globales
 canal = ""
 spinner = Halo(text='Cargando navegador...', spinner='dots')
@@ -19,6 +23,26 @@ loop = asyncio.new_event_loop()
 thread_pool = tpe(max_workers=100)
 should_exit = False
 
+def get_active_window_process():
+    """Obtiene el nombre del proceso de la ventana activa"""
+    try:
+        # Obtener handle de la ventana activa
+        hwnd = win32gui.GetForegroundWindow()
+
+        # Obtener PID del proceso
+        _, pid = win32process.GetWindowThreadProcessId(hwnd)
+
+        # Obtener nombre del proceso
+        process = psutil.Process(pid)
+        return process.name().lower()
+    except:
+        return None
+
+def is_gta_active():
+    """Verifica si GTA San Andreas está en primer plano"""
+    active_process = get_active_window_process()
+    print(active_process)
+    return active_process == "gta_sa.exe"
 def get_key_nonblocking():
     """
     Lee una tecla de manera no bloqueante para Windows
@@ -106,7 +130,8 @@ async def tick_async():
         await on_exit()
         sys.exit(0)
         return
-    await execute_command()
+    if is_gta_active():
+        await execute_command()
 
 def tick():
     """
