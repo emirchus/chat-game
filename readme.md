@@ -50,8 +50,10 @@ pip install -r requirements.txt
 python src/main.py
 ```
 
-2. Ingresa el nombre del canal de Kick.com que deseas monitorear
-3. El programa comenzará a escuchar los comandos del chat
+2. El programa te mostrará la configuración actual y te preguntará si deseas modificar el cooldown
+3. Si deseas cambiarlo, ingresa el nuevo valor en segundos (de lo contrario, presiona Enter)
+4. Ingresa el nombre del canal de Kick.com que deseas monitorear
+5. El programa comenzará a escuchar los comandos del chat
 
 ### Controles del programa:
 
@@ -105,9 +107,27 @@ scripts/build.bat
 
 ### Configuración del Cooldown y Sistema
 
-Ahora puedes configurar fácilmente el tiempo de cooldown entre comandos y otros parámetros editando el archivo `config.json`.
+Tienes **dos formas** de configurar el cooldown entre comandos:
 
-#### 📍 ¿Dónde encuentro el archivo de configuración?
+#### 🎯 Opción 1: Configuración Interactiva (Recomendada)
+
+Al iniciar el programa, se te preguntará si deseas modificar el cooldown:
+```
+⚙️  Cooldown configurado: 200s (por defecto: 200s)
+📋 Archivo de configuración: C:\Users\...\AppData\Roaming\chat-game\config.json
+
+¿Desea modificar el cooldown? (s/N):
+```
+
+- Escribe `s` o `si` para modificar el valor
+- Ingresa el nuevo valor en segundos
+- El cambio se guardará automáticamente
+
+#### 📝 Opción 2: Editar el archivo de configuración manualmente
+
+También puedes editar el archivo `config.json` directamente.
+
+##### 📍 ¿Dónde encuentro el archivo de configuración?
 
 **Para usuarios finales (.exe):**
 El archivo se encuentra en: `%APPDATA%\chat-game\config.json`

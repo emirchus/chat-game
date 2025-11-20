@@ -10,7 +10,7 @@ from os import system as bash
 from concurrent.futures import ThreadPoolExecutor as tpe
 import signal
 import time
-from config import load_config, print_config_location
+from config import load_config, print_config_location, update_config
 # Variables globales
 canal = ""
 spinner = Halo(text='Cargando navegador...', spinner='dots')
@@ -130,13 +130,44 @@ async def async_main():
     """
     try:
         global canal
+        session = PromptSession()
+
         # Cargar y mostrar configuración
         config = load_config()
-        print(f"⚙️  Cooldown configurado: {config['command_cooldown_seconds']}s")
+        current_cooldown = config['command_cooldown_seconds']
+
+        print(f"⚙️  Cooldown configurado: {current_cooldown}s (por defecto: 200s)")
         print_config_location()
         print()
 
-        session = PromptSession()
+        # Preguntar si desea modificar la configuración
+        modify_config = await session.prompt_async("¿Desea modificar el cooldown? (s/N): ")
+
+        if modify_config.lower() in ['s', 'si', 'sí', 'yes', 'y']:
+            while True:
+                try:
+                    new_cooldown = await session.prompt_async(f"Ingrese el nuevo cooldown en segundos (actual: {current_cooldown}s): ")
+                    new_cooldown_value = int(new_cooldown)
+
+                    if new_cooldown_value <= 0:
+                        print("⚠️  El cooldown debe ser mayor a 0 segundos. Intente nuevamente.")
+                        continue
+
+                    # Actualizar configuración
+                    if update_config('command_cooldown_seconds', new_cooldown_value):
+                        print(f"✅ Cooldown actualizado a {new_cooldown_value}s")
+                        current_cooldown = new_cooldown_value
+                    else:
+                        print("⚠️  No se pudo actualizar la configuración")
+                    break
+
+                except ValueError:
+                    print("⚠️  Por favor ingrese un número válido")
+                except KeyboardInterrupt:
+                    print("\n⚠️  Cancelado, usando configuración actual")
+                    break
+
+        print()
         canal = await session.prompt_async("🟩 Ingresá el nombre del canal de Kick: ")
         spinner.start()
         await clear_histories()
