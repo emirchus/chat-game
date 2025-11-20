@@ -105,7 +105,23 @@ scripts/build.bat
 
 ### Configuración del Cooldown y Sistema
 
-Ahora puedes configurar fácilmente el tiempo de cooldown entre comandos y otros parámetros editando el archivo `config.json` en la raíz del proyecto:
+Ahora puedes configurar fácilmente el tiempo de cooldown entre comandos y otros parámetros editando el archivo `config.json`.
+
+#### 📍 ¿Dónde encuentro el archivo de configuración?
+
+**Para usuarios finales (.exe):**
+El archivo se encuentra en: `%APPDATA%\chat-game\config.json`
+
+Para acceder rápidamente:
+1. Presiona `Win + R`
+2. Escribe `%APPDATA%\chat-game`
+3. Presiona Enter
+4. Edita el archivo `config.json` con un editor de texto
+
+**Para desarrolladores:**
+El programa muestra la ubicación del archivo al iniciar. También puedes encontrarlo en la raíz del proyecto o en AppData.
+
+#### ⚙️ Parámetros configurables:
 
 ```json
 {
@@ -117,6 +133,8 @@ Ahora puedes configurar fácilmente el tiempo de cooldown entre comandos y otros
 **Parámetros disponibles:**
 - `command_cooldown_seconds`: Tiempo en segundos que debe esperar un usuario entre comandos (por defecto: 200 segundos)
 - `command_history_limit`: Número máximo de comandos a guardar en el historial (por defecto: 10)
+
+> 💡 **Tip:** El programa muestra la ubicación exacta del archivo y el cooldown actual cada vez que se inicia.
 
 ### Personalización de Comandos
 

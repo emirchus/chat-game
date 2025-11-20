@@ -10,6 +10,7 @@ from os import system as bash
 from concurrent.futures import ThreadPoolExecutor as tpe
 import signal
 import time
+from config import load_config, print_config_location
 # Variables globales
 canal = ""
 spinner = Halo(text='Cargando navegador...', spinner='dots')
@@ -129,6 +130,12 @@ async def async_main():
     """
     try:
         global canal
+        # Cargar y mostrar configuración
+        config = load_config()
+        print(f"⚙️  Cooldown configurado: {config['command_cooldown_seconds']}s")
+        print_config_location()
+        print()
+
         session = PromptSession()
         canal = await session.prompt_async("🟩 Ingresá el nombre del canal de Kick: ")
         spinner.start()

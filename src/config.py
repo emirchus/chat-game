@@ -21,14 +21,25 @@ _config_cache = None
 def get_config_path() -> str:
     """
     Obtiene la ruta del archivo de configuración
+    Guarda en AppData para que sea accesible al usuario final
 
     Returns:
         str: Ruta absoluta al archivo config.json
     """
-    # Obtener la ruta del directorio raíz del proyecto
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    project_root = os.path.dirname(current_dir)
-    config_path = os.path.join(project_root, 'config.json')
+    # Obtener ruta de AppData (mismo lugar donde se guarda el historial)
+    appdata = os.getenv('APPDATA')
+
+    if appdata:
+        # Usuario final (Windows) - guardar en AppData
+        game_dir = os.path.join(appdata, 'chat-game')
+        os.makedirs(game_dir, exist_ok=True)
+        config_path = os.path.join(game_dir, 'config.json')
+    else:
+        # Desarrollo o sistemas sin AppData - guardar en la raíz del proyecto
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        project_root = os.path.dirname(current_dir)
+        config_path = os.path.join(project_root, 'config.json')
+
     return config_path
 
 def load_config() -> dict:
@@ -141,3 +152,12 @@ def reload_config():
     global _config_cache
     _config_cache = None
     load_config()
+
+def print_config_location():
+    """
+    Muestra la ubicación del archivo de configuración
+    Útil para que el usuario sepa dónde editarlo
+    """
+    config_path = get_config_path()
+    print(f"📋 Archivo de configuración: {config_path}")
+    return config_path
